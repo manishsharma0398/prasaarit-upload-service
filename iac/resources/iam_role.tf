@@ -1,4 +1,19 @@
-resource "aws_iam_role" "prasaarit_upload_service" {
-  name               = "prasaarit_upload_service_fn_execution_role"
-  assume_role_policy = ""
+resource "aws_iam_role" "main" {
+  name = local.lambda_full_name
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
 }
