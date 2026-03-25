@@ -1,0 +1,4 @@
+.terraform
+.venv
+.build
+prasaarit_upload_service.zip
