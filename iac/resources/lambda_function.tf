@@ -27,7 +27,8 @@ resource "aws_lambda_function" "main" {
 
   environment {
     variables = {
-      ENV = "stg"
+      ENV             = "stg"
+      RAW_BUCKET_NAME = "prasaarit-stg-raw-uploads"
     }
   }
 

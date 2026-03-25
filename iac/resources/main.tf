@@ -17,3 +17,7 @@ terraform {
   required_version = "1.14.7"
 }
 
+
+provider "aws" {
+  region = "ap-south-1"
+}
