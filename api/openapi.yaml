@@ -1,0 +1,93 @@
+openapi: "3.0.1"
+info:
+  title: prasaarit-upload-services-api
+  version: "1.0"
+paths:
+  /generate-presigned-url:
+    post:
+      operationId: generatePresignedUrl
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - contentType
+                - fileSize
+              properties:
+                contentType:
+                  type: string
+                fileSize:
+                  type: number
+      responses:
+        "200":
+          description: Presigned URL generated
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        uri: "${lambda_invoke_arn}"
+        payloadFormatVersion: "2.0"
+        description: "Generate a presigned S3 URL"
+        passthroughBehavior: WHEN_NO_MATCH
+        timeoutInMillis: 29000
+  /initiate-multipart-upload:
+    post:
+      operationId: initiateMultipartUpload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Multipart upload initiated
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        uri: "${lambda_invoke_arn}"
+        payloadFormatVersion: "2.0"
+        description: "Initiate a multipart S3 upload"
+        passthroughBehavior: WHEN_NO_MATCH
+        timeoutInMillis: 29000
+  /complete-multipart-upload:
+    post:
+      operationId: completeMultipartUpload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Multipart upload completed
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        uri: "${lambda_invoke_arn}"
+        payloadFormatVersion: "2.0"
+        description: "Complete a multipart S3 upload"
+        passthroughBehavior: WHEN_NO_MATCH
+        timeoutInMillis: 29000
+  /abort-multipart-upload:
+    post:
+      operationId: abortMultipartUpload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Multipart upload aborted
+      x-amazon-apigateway-integration:
+        type: AWS_PROXY
+        httpMethod: POST
+        uri: "${lambda_invoke_arn}"
+        payloadFormatVersion: "2.0"
+        description: "Abort a multipart S3 upload"
+        passthroughBehavior: WHEN_NO_MATCH
+        timeoutInMillis: 29000
