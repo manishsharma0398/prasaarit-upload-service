@@ -3,8 +3,12 @@ from botocore.config import Config
 from botocore.exceptions import ClientError
 from .logger import logger
 from .constants import URL_TYPE
-from typing import Optional, Union
-from mypy_boto3_s3.type_defs import CompletedPartTypeDef
+from typing import Optional, Union, TypedDict
+
+
+class CompletedPartTypeDef(TypedDict):
+    PartNumber: int
+    ETag: str
 
 
 def get_s3_client(region: str):
@@ -82,7 +86,7 @@ def complete_multipart_upload(
             Bucket=bucket,
             Key=s3_key,
             UploadId=upload_id,
-            MultipartUpload={"Parts": parts},
+            MultipartUpload={"Parts": parts},  # type: ignore
         )
     except ClientError as e:
         logger.error(f"Failed to complete multipart upload: {e}")
