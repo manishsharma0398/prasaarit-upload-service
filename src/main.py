@@ -67,7 +67,7 @@ def handler(event: APIGatewayProxyEventV2, context: LambdaContext):
     logger.info("Incoming event", extra={"event": json.dumps(event)})
 
     try:
-        route_key = str(event.get("route_key", ""))
+        route_key = str(event.get("routeKey", ""))
 
         action = ROUTES.get(route_key)
 
@@ -114,3 +114,52 @@ def handler(event: APIGatewayProxyEventV2, context: LambdaContext):
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
         return build_response(500, {"error": "Internal server error"})
+
+
+print(
+    handler(
+        event={
+            "version": "2.0",
+            "routeKey": "POST /generate-presigned-url",
+            "rawPath": "/stg/generate-presigned-url",
+            "rawQueryString": "",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "br, gzip, deflate",
+                "accept-language": "*",
+                "cache-control": "no-cache",
+                "content-length": "47",
+                "content-type": "application/json",
+                "host": "y87ayje7id.execute-api.ap-south-1.amazonaws.com",
+                "pragma": "no-cache",
+                "sec-fetch-mode": "cors",
+                "user-agent": "node",
+                "x-amzn-trace-id": "Root=1-69b79cc7-6aa485e52f33a2b23aed2f50",
+                "x-forwarded-for": "49.37.55.192",
+                "x-forwarded-port": "443",
+                "x-forwarded-proto": "https",
+            },
+            "requestContext": {
+                "accountId": "221723377310",
+                "apiId": "y87ayje7id",
+                "domainName": "y87ayje7id.execute-api.ap-south-1.amazonaws.com",
+                "domainPrefix": "y87ayje7id",
+                "http": {
+                    "method": "POST",
+                    "path": "/stg/generate-presigned-url",
+                    "protocol": "HTTP/1.1",
+                    "sourceIp": "49.37.55.192",
+                    "userAgent": "node",
+                },
+                "requestId": "aTVvPju0hcwEPqg=",
+                "routeKey": "POST /generate-presigned-url",
+                "stage": "stg",
+                "time": "16/Mar/2026:06:01:43 +0000",
+                "timeEpoch": 1773640903579,
+            },
+            "body": '{"contentType":"video/mp4","fileSize":24377474}',
+            "isBase64Encoded": False,
+        },  # type: ignore
+        context={},  # type: ignore
+    )
+)

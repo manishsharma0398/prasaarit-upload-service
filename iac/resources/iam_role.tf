@@ -25,7 +25,7 @@ resource "aws_iam_policy" "cloudwatch" {
       {
         "Effect" : "Allow",
         "Action" : "logs:CreateLogGroup",
-        "Resource" : aws_cloudwatch_log_group.main.arn
+        "Resource" : aws_cloudwatch_log_group.lambda_logs.arn
       },
       {
         "Effect" : "Allow",
@@ -34,7 +34,7 @@ resource "aws_iam_policy" "cloudwatch" {
           "logs:PutLogEvents"
         ],
         "Resource" : [
-          aws_cloudwatch_log_group.main.arn
+          "${aws_cloudwatch_log_group.lambda_logs.arn}:*" // need to understand this better
         ]
       }
     ]
@@ -59,19 +59,18 @@ resource "aws_iam_policy" "s3" {
           "s3:ListBucket",
           "s3:ListBucketMultipartUploads",
         ],
-        "Resource" : "arn:aws:s3:::prasaarit-stg-raw-uploads"
+        "Resource" : "arn:aws:s3:::${var.aws_raw_bucket_name}"
       },
       {
         "Sid" : "ObjectLevelAccess",
         "Effect" : "Allow",
         "Action" : [
           "s3:GetObject",
-          "s3:PutObject",
-          # "s3:CreateMultipartUpload",
+          "s3:PutObject", # also covers CreateMultipartUpload, UploadPart, CompleteMultipartUpload
           "s3:AbortMultipartUpload",
           "s3:ListMultipartUploadParts",
         ],
-        "Resource" : "arn:aws:s3:::prasaarit-stg-raw-uploads/raw/*"
+        "Resource" : "arn:aws:s3:::${var.aws_raw_bucket_name}/raw/*"
       }
     ]
   })

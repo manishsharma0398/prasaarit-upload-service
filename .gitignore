@@ -2,3 +2,4 @@
 .venv
 .build
 prasaarit_upload_service.zip
+__pycache__
