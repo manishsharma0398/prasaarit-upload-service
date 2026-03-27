@@ -1,6 +1,7 @@
 import os
 import uuid
 from typing import Union
+from fastapi import HTTPException
 
 
 from ..utils.s3 import (
@@ -10,12 +11,21 @@ from ..utils.s3 import (
     generate_presigned_url,
 )
 
+from src.api.models.s3_presigned_url import (
+    GeneratePresignedUrlRequest,
+    GeneratePresignedUrlResponse,
+)
+from src.api.models.multipart_upload import (
+    MultiPartUploadInitiateRequest,
+    MultiPartUploadInitiateResponse,
+    MultiPartUploadCompleteRequest,
+    MultiPartUploadCompleteResponse,
+)
 
-def handle_generate_presigned_url(body) -> tuple[int, dict[str, Union[str, int]]]:
-    content_type = body.get("contentType")
 
-    if not content_type:
-        return (400, {"error": "Missing contentType"})
+def handle_generate_presigned_url(
+    body: GeneratePresignedUrlRequest,
+) -> GeneratePresignedUrlResponse:
 
     media_id = str(uuid.uuid4())
     s3_key = f"raw/{media_id}"
@@ -24,29 +34,22 @@ def handle_generate_presigned_url(body) -> tuple[int, dict[str, Union[str, int]]
         region=os.getenv("AWS_REGION", "ap-south-1"),
         bucket_name=os.getenv("RAW_BUCKET_NAME", "prasaarit-stg-raw-uploads"),
         s3_key=s3_key,
-        content_type=content_type,
+        content_type=body.contentType,
     )
 
     if result is None:
-        return (500, {"error": "Failed to generate presigned URL"})
+        raise HTTPException(status_code=500, detail="Failed to generate presigned URL")
 
     presigned_url, expires_in = result
 
-    return (
-        200,
-        {
-            "presignedUrl": presigned_url,
-            "mediaId": media_id,
-            "expiresIn": expires_in,
-        },
+    return GeneratePresignedUrlResponse(
+        mediaId=media_id, expiresIn=expires_in, presignedUrl=presigned_url
     )
 
 
-def handle_multipart_initiate(body) -> tuple[int, dict[str, str]]:
-    content_type = body.get("contentType")
-
-    if not content_type:
-        return (400, {"error": "Missing contentType"})
+def handle_multipart_initiate(
+    body: MultiPartUploadInitiateRequest,
+) -> MultiPartUploadInitiateResponse:
 
     media_id = str(uuid.uuid4())
     s3_key = f"raw/{media_id}"
@@ -55,25 +58,28 @@ def handle_multipart_initiate(body) -> tuple[int, dict[str, str]]:
         region=os.getenv("AWS_REGION", "ap-south-1"),
         bucket=os.getenv("RAW_BUCKET_NAME", "prasaarit-stg-raw-uploads"),
         s3_key=s3_key,
-        content_type=content_type,
+        content_type=body.contentType,
     )
 
     if result is None:
-        return (500, {"error": "Failed to initiate multipart upload"})
+        raise HTTPException(
+            status_code=500, detail="Failed to initiate multipart upload"
+        )
 
-    return (200, {"uploadId": result, "s3Key": s3_key})
+    return MultiPartUploadInitiateResponse(s3Key=s3_key, uploadId=result)
 
 
-def handle_multipart_complete(body) -> tuple[int, dict[str, Union[bool, str]]]:
-    parts = body.get("parts")
-    s3_key = body.get("s3Key")
-    upload_id = body.get("uploadId")
+def handle_multipart_complete(
+    body: MultiPartUploadCompleteRequest,
+) -> MultiPartUploadCompleteResponse:
 
-    if not s3_key or not upload_id:
-        return (400, {"error": "Missing uploadId or s3Key"})
+    parts = body.parts
+    s3_key = body.s3Key
+    upload_id = body.uploadId
 
-    if not parts or not isinstance(parts, list):
-        return (400, {"error": "Missing or invalid parts array"})
+    # TODO:
+    # if not parts or not isinstance(parts, list):
+    #     return (400, {"error": "Missing or invalid parts array"})
 
     result = complete_multipart_upload(
         region=os.getenv("AWS_REGION", "ap-south-1"),
@@ -84,9 +90,11 @@ def handle_multipart_complete(body) -> tuple[int, dict[str, Union[bool, str]]]:
     )
 
     if not result:
-        return (500, {"error": "Failed to complete multipart upload"})
+        raise HTTPException(
+            status_code=500, detail="Failed to complete multipart upload"
+        )
 
-    return (200, {"success": True, "uploadId": upload_id})
+    return MultiPartUploadCompleteResponse(success=True, uploadId=upload_id)
 
 
 def handle_multipart_abort(body) -> tuple[int, dict[str, Union[bool, str]]]:
