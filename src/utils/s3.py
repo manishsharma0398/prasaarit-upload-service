@@ -47,7 +47,7 @@ def generate_presigned_url(
     content_type: Optional[str] = None,
     url_type: URL_TYPE = URL_TYPE.SINGLE,
     upload_id: Optional[str] = None,
-    part_number: Optional[int] = -1,
+    part_number: Optional[int] = None,
 ) -> Optional[tuple[str, int]]:
     try:
         operation = ""
@@ -98,7 +98,7 @@ def complete_multipart_upload(
     s3_key: str,
     upload_id: str,
     parts: list[CompletedPartTypeDef],
-):
+) -> Optional[dict]:
     try:
         return get_s3_client(region).complete_multipart_upload(
             Bucket=bucket,
@@ -108,7 +108,7 @@ def complete_multipart_upload(
         )
     except ClientError as e:
         logger.error(f"Failed to complete multipart upload: {e}")
-        return False
+        return None
 
 
 def abort_multipart_upload(
