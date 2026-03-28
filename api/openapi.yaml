@@ -2,18 +2,27 @@ openapi: 3.0.3
 info:
   title: prasaarit-upload-services-api
   description: Upload service for Prasaarit
-  version: "1.0"
+  version: 0.1.0
 paths:
   /generate-presigned-url:
     post:
       summary: Generate Presigned Url
       operationId: generate_presigned_url_generate_presigned_url_post
+      parameters:
+      - name: type
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/URL_TYPE'
+          description: 'Upload type: ''single'' or ''multipart''. Defaults to ''single''.'
+          default: single
+        description: 'Upload type: ''single'' or ''multipart''. Defaults to ''single''.'
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/GeneratePresignedUrlRequest'
-        required: true
       responses:
         '200':
           description: Successful Response
@@ -130,6 +139,23 @@ paths:
         timeoutInMillis: 15000
 components:
   schemas:
+    CompletedPart:
+      properties:
+        PartNumber:
+          type: integer
+          maximum: 10000.0
+          minimum: 1.0
+          title: Partnumber
+          description: "Part number (1\u201310000)"
+        ETag:
+          type: string
+          title: Etag
+          description: ETag returned by S3 in the PUT response header
+      type: object
+      required:
+      - PartNumber
+      - ETag
+      title: CompletedPart
     GeneratePresignedUrlRequest:
       properties:
         fileSize:
@@ -142,6 +168,26 @@ components:
           type: string
           title: Contenttype
           description: MIME type of the file
+        s3Key:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: S3Key
+          description: S3 object key. Required when type=multipart.
+        uploadId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uploadid
+          description: Multipart upload ID. Required when type=multipart.
+        partNumber:
+          anyOf:
+          - type: integer
+            maximum: 10000.0
+            minimum: 1.0
+          - type: 'null'
+          title: Partnumber
+          description: "Part number (1\u201310000). Required when type=multipart."
       type: object
       required:
       - fileSize
@@ -209,9 +255,11 @@ components:
     MultiPartUploadCompleteRequest:
       properties:
         parts:
-          items: {}
+          items:
+            $ref: '#/components/schemas/CompletedPart'
           type: array
           title: Parts
+          description: List of completed parts with PartNumber and ETag
         s3Key:
           type: string
           title: S3Key
@@ -273,6 +321,12 @@ components:
       - uploadId
       - s3Key
       title: MultiPartUploadInitiateResponse
+    URL_TYPE:
+      type: string
+      enum:
+      - single
+      - multipart
+      title: URL_TYPE
     ValidationError:
       properties:
         loc:
