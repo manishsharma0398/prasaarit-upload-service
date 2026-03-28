@@ -9,13 +9,15 @@ resource "aws_apigatewayv2_api" "main" {
   protocol_type = "HTTP"
 
   cors_configuration {
-    allow_origins = ["http://localhost:3000", "https://prasaarit.themanishsharma.in", "http://localhost:3000/upload"]
+    allow_origins = ["http://localhost:3000", "https://prasaarit.themanishsharma.in"]
     allow_headers = ["content-type"]
     allow_methods = ["POST", "OPTIONS", "PUT"]
     max_age       = 300
   }
 
-  tags = {}
+  tags = {
+    Environment = "stg"
+  }
 
   body = templatefile("${path.module}/../../api/openapi.yaml", {
     lambda_invoke_arn = aws_lambda_function.main.invoke_arn
