@@ -1,15 +1,5 @@
 locals {
-  lambda_full_name = "${var.aws_lambda_env}-${var.aws_lambda_name}"
-}
-
-resource "aws_cloudwatch_log_group" "main" {
-  name              = "/aws/lambda/${local.lambda_full_name}"
-  retention_in_days = 14
-
-  tags = {
-    Environment = "stg"
-    Application = "Prasaarit"
-  }
+  lambda_full_name = "${var.aws_env}-${var.aws_lambda_name}"
 }
 
 resource "aws_lambda_function" "main" {
@@ -21,19 +11,19 @@ resource "aws_lambda_function" "main" {
   handler          = "src.main.handler"
   runtime          = "python3.13"
   architectures    = ["arm64"]
-  depends_on       = [aws_cloudwatch_log_group.main]
+  depends_on       = [aws_cloudwatch_log_group.lambda_logs]
   memory_size      = var.aws_lambda_memory_size
   timeout          = var.aws_lambda_timeout
 
   environment {
     variables = {
-      ENV             = "stg"
-      RAW_BUCKET_NAME = "prasaarit-stg-raw-uploads"
+      ENV             = var.aws_env
+      RAW_BUCKET_NAME = var.aws_raw_bucket_name
     }
   }
 
   tags = {
-    Environment = "stg"
+    Environment = var.aws_env
     Application = "Prasaarit"
   }
 }
