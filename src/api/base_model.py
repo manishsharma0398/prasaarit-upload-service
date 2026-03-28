@@ -1,6 +1,6 @@
-from pydantic import BaseModel as _BaseModel, Field
+from pydantic import BaseModel as _BaseModel, Field, field_validator
 from ulid import ULID
-from utils.constants import ALLOWED_CONTENT_TYPES, MAX_FILE_SIZE
+from src.utils.constants import ALLOWED_CONTENT_TYPES, MAX_FILE_SIZE
 
 
 class BaseModel(_BaseModel):
@@ -11,13 +11,9 @@ class BaseModel(_BaseModel):
 class CommonContentValidation(BaseModel):
     contentType: str = Field(description="MIME type of the file")
 
+    @field_validator("contentType")
     @classmethod
-    def __get_validators__(cls):
-        yield from super().__get_validators__()  # type: ignore
-        yield cls.validate_content_type
-
-    @classmethod
-    def validate_content_type(cls, value):
+    def validate_content_type(cls, value: str) -> str:
         if value not in ALLOWED_CONTENT_TYPES:
             raise ValueError(
                 f"Invalid contentType: {value}. Allowed: {ALLOWED_CONTENT_TYPES}"

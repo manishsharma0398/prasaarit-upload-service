@@ -27,3 +27,7 @@ cd ..
 
 echo "✅ Done! Created: $ZIP_FILE"
 echo "📊 Size: $(du -sh $ZIP_FILE | cut -f1)"
+
+echo "📁 Generating api specs..."
+python -m src.generate_specs
+echo "📁 Successfully generated api specs..."

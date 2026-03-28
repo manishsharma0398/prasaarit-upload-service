@@ -1,8 +1,12 @@
-from src.api.base_model import BaseModel, CommonContentValidation
+from src.api.base_model import (
+    BaseModel,
+    CommonContentValidation,
+    CommonFileSizeValidation,
+)
 from pydantic import Field
 
 
-class GeneratePresignedUrlRequest(CommonContentValidation):
+class GeneratePresignedUrlRequest(CommonContentValidation, CommonFileSizeValidation):
     pass
 
 

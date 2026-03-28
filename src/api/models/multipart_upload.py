@@ -1,9 +1,13 @@
-from src.api.base_model import BaseModel, CommonContentValidation
+from src.api.base_model import (
+    BaseModel,
+    CommonContentValidation,
+    CommonFileSizeValidation,
+)
 from pydantic import Field
 from typing import Any
 
 
-class MultiPartUploadInitiateRequest(CommonContentValidation):
+class MultiPartUploadInitiateRequest(CommonContentValidation, CommonFileSizeValidation):
     pass
 
 

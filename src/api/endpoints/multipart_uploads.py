@@ -11,7 +11,7 @@ from src.api.models.multipart_upload import (
 )
 
 
-from services.s3_services import (
+from src.services.s3_services import (
     handle_multipart_initiate,
     handle_multipart_complete,
     handle_multipart_abort,

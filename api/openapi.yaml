@@ -1,93 +1,301 @@
-openapi: "3.0.1"
+openapi: 3.0.3
 info:
   title: prasaarit-upload-services-api
+  description: Upload service for Prasaarit
   version: "1.0"
 paths:
   /generate-presigned-url:
     post:
-      operationId: generatePresignedUrl
+      summary: Generate Presigned Url
+      operationId: generate_presigned_url_generate_presigned_url_post
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - contentType
-                - fileSize
-              properties:
-                contentType:
-                  type: string
-                fileSize:
-                  type: number
+              $ref: '#/components/schemas/GeneratePresignedUrlRequest'
+        required: true
       responses:
-        "200":
-          description: Presigned URL generated
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneratePresignedUrlResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
       x-amazon-apigateway-integration:
         type: AWS_PROXY
         httpMethod: POST
-        uri: "${lambda_invoke_arn}"
-        payloadFormatVersion: "2.0"
-        description: "Generate a presigned S3 URL"
+        uri: ${lambda_invoke_arn}
+        payloadFormatVersion: '2.0'
+        description: Generate Presigned Url
         passthroughBehavior: WHEN_NO_MATCH
-        timeoutInMillis: 29000
+        timeoutInMillis: 15000
   /initiate-multipart-upload:
     post:
-      operationId: initiateMultipartUpload
+      summary: Initiate Multipart Upload
+      operationId: initiate_multipart_upload_initiate_multipart_upload_post
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/MultiPartUploadInitiateRequest'
+        required: true
       responses:
-        "200":
-          description: Multipart upload initiated
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MultiPartUploadInitiateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
       x-amazon-apigateway-integration:
         type: AWS_PROXY
         httpMethod: POST
-        uri: "${lambda_invoke_arn}"
-        payloadFormatVersion: "2.0"
-        description: "Initiate a multipart S3 upload"
+        uri: ${lambda_invoke_arn}
+        payloadFormatVersion: '2.0'
+        description: Initiate Multipart Upload
         passthroughBehavior: WHEN_NO_MATCH
-        timeoutInMillis: 29000
+        timeoutInMillis: 15000
   /complete-multipart-upload:
     post:
-      operationId: completeMultipartUpload
+      summary: Complete Multipart Upload
+      operationId: complete_multipart_upload_complete_multipart_upload_post
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/MultiPartUploadCompleteRequest'
+        required: true
       responses:
-        "200":
-          description: Multipart upload completed
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MultiPartUploadCompleteResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
       x-amazon-apigateway-integration:
         type: AWS_PROXY
         httpMethod: POST
-        uri: "${lambda_invoke_arn}"
-        payloadFormatVersion: "2.0"
-        description: "Complete a multipart S3 upload"
+        uri: ${lambda_invoke_arn}
+        payloadFormatVersion: '2.0'
+        description: Complete Multipart Upload
         passthroughBehavior: WHEN_NO_MATCH
-        timeoutInMillis: 29000
+        timeoutInMillis: 15000
   /abort-multipart-upload:
     post:
-      operationId: abortMultipartUpload
+      summary: Abort Multipart Upload
+      operationId: abort_multipart_upload_abort_multipart_upload_post
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/MultiPartUploadAbortRequest'
+        required: true
       responses:
-        "200":
-          description: Multipart upload aborted
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MultiPartUploadAbortResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
       x-amazon-apigateway-integration:
         type: AWS_PROXY
         httpMethod: POST
-        uri: "${lambda_invoke_arn}"
-        payloadFormatVersion: "2.0"
-        description: "Abort a multipart S3 upload"
+        uri: ${lambda_invoke_arn}
+        payloadFormatVersion: '2.0'
+        description: Abort Multipart Upload
         passthroughBehavior: WHEN_NO_MATCH
-        timeoutInMillis: 29000
+        timeoutInMillis: 15000
+components:
+  schemas:
+    GeneratePresignedUrlRequest:
+      properties:
+        fileSize:
+          type: number
+          maximum: 5368709120.0
+          minimum: 0.0
+          title: Filesize
+          description: Size of the file in bytes
+        contentType:
+          type: string
+          title: Contenttype
+          description: MIME type of the file
+      type: object
+      required:
+      - fileSize
+      - contentType
+      title: GeneratePresignedUrlRequest
+    GeneratePresignedUrlResponse:
+      properties:
+        mediaId:
+          type: string
+          title: Mediaid
+          description: Media ID
+        presignedUrl:
+          type: string
+          title: Presignedurl
+          description: Presigned S3 URL
+        expiresIn:
+          type: integer
+          title: Expiresin
+          description: presigned link expiry time
+      type: object
+      required:
+      - mediaId
+      - presignedUrl
+      - expiresIn
+      title: GeneratePresignedUrlResponse
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    MultiPartUploadAbortRequest:
+      properties:
+        uploadId:
+          type: string
+          title: Uploadid
+          description: Multipart upload ID
+        s3Key:
+          type: string
+          title: S3Key
+          description: S3 object key
+      type: object
+      required:
+      - uploadId
+      - s3Key
+      title: MultiPartUploadAbortRequest
+    MultiPartUploadAbortResponse:
+      properties:
+        uploadId:
+          type: string
+          title: Uploadid
+          description: Multipart upload ID
+        success:
+          type: boolean
+          title: Success
+          description: Whether the multipart upload was aborted successfully
+      type: object
+      required:
+      - uploadId
+      - success
+      title: MultiPartUploadAbortResponse
+    MultiPartUploadCompleteRequest:
+      properties:
+        parts:
+          items: {}
+          type: array
+          title: Parts
+        s3Key:
+          type: string
+          title: S3Key
+          description: S3 object key
+        uploadId:
+          type: string
+          title: Uploadid
+          description: Multipart upload ID
+      type: object
+      required:
+      - parts
+      - s3Key
+      - uploadId
+      title: MultiPartUploadCompleteRequest
+    MultiPartUploadCompleteResponse:
+      properties:
+        uploadId:
+          type: string
+          title: Uploadid
+          description: Multipart upload ID
+        success:
+          type: boolean
+          title: Success
+          description: Whether the multipart upload was completed successfully
+      type: object
+      required:
+      - uploadId
+      - success
+      title: MultiPartUploadCompleteResponse
+    MultiPartUploadInitiateRequest:
+      properties:
+        fileSize:
+          type: number
+          maximum: 5368709120.0
+          minimum: 0.0
+          title: Filesize
+          description: Size of the file in bytes
+        contentType:
+          type: string
+          title: Contenttype
+          description: MIME type of the file
+      type: object
+      required:
+      - fileSize
+      - contentType
+      title: MultiPartUploadInitiateRequest
+    MultiPartUploadInitiateResponse:
+      properties:
+        uploadId:
+          type: string
+          title: Uploadid
+          description: Multipart upload ID
+        s3Key:
+          type: string
+          title: S3Key
+          description: S3 object key
+      type: object
+      required:
+      - uploadId
+      - s3Key
+      title: MultiPartUploadInitiateResponse
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError

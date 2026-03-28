@@ -5,7 +5,7 @@ from src.api.models.s3_presigned_url import (
 )
 
 
-from services.s3_services import handle_generate_presigned_url
+from src.services.s3_services import handle_generate_presigned_url
 
 router = APIRouter()
 
