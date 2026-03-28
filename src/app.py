@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
-from fastapi.exceptions import RequestValidationError, HTTPException
+from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.responses import JSONResponse
+
 from src.api.api import router
 from src.utils.logger import logger
 

@@ -1,5 +1,6 @@
 from fastapi import APIRouter
-from src.api.endpoints import s3_presigned_url, multipart_uploads
+
+from src.api.endpoints import multipart_uploads, s3_presigned_url
 
 router = APIRouter()
 

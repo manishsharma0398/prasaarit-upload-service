@@ -1,5 +1,7 @@
-from pydantic import BaseModel as _BaseModel, Field, field_validator
+from pydantic import BaseModel as _BaseModel
+from pydantic import Field, field_validator
 from ulid import ULID
+
 from src.utils.constants import ALLOWED_CONTENT_TYPES, MAX_FILE_SIZE
 
 

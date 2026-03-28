@@ -1,20 +1,17 @@
 from fastapi import APIRouter
 
-
 from src.api.models.multipart_upload import (
-    MultiPartUploadAbortResponse,
-    MultiPartUploadCompleteResponse,
-    MultiPartUploadInitiateResponse,
     MultiPartUploadAbortRequest,
+    MultiPartUploadAbortResponse,
     MultiPartUploadCompleteRequest,
+    MultiPartUploadCompleteResponse,
     MultiPartUploadInitiateRequest,
+    MultiPartUploadInitiateResponse,
 )
-
-
 from src.services.s3_services import (
-    handle_multipart_initiate,
-    handle_multipart_complete,
     handle_multipart_abort,
+    handle_multipart_complete,
+    handle_multipart_initiate,
 )
 
 router = APIRouter()

@@ -1,6 +1,8 @@
 from mangum import Mangum
-from .app import create_fast_api_app
+
 from src.utils.logger import logger
+
+from .app import create_fast_api_app
 
 app = create_fast_api_app()
 
