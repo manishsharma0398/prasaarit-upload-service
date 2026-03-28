@@ -1,43 +1,77 @@
 import os
 import uuid
+
 from botocore.exceptions import ClientError
 from fastapi import HTTPException
-from src.utils.logger import logger
 
-
-from src.utils.s3 import (
-    initiate_multipart_upload,
-    complete_multipart_upload,
-    abort_multipart_upload,
-    generate_presigned_url,
+from src.api.models.multipart_upload import (
+    MultiPartUploadAbortRequest,
+    MultiPartUploadAbortResponse,
+    MultiPartUploadCompleteRequest,
+    MultiPartUploadCompleteResponse,
+    MultiPartUploadInitiateRequest,
+    MultiPartUploadInitiateResponse,
 )
-
 from src.api.models.s3_presigned_url import (
     GeneratePresignedUrlRequest,
     GeneratePresignedUrlResponse,
 )
-from src.api.models.multipart_upload import (
-    MultiPartUploadInitiateRequest,
-    MultiPartUploadInitiateResponse,
-    MultiPartUploadCompleteRequest,
-    MultiPartUploadCompleteResponse,
-    MultiPartUploadAbortRequest,
-    MultiPartUploadAbortResponse,
+from src.utils.constants import URL_TYPE
+from src.utils.logger import logger
+from src.utils.s3 import (
+    CompletedPartTypeDef,
+    abort_multipart_upload,
+    complete_multipart_upload,
+    generate_presigned_url,
+    initiate_multipart_upload,
 )
+
+
+def _extract_media_id(s3_key: str) -> str:
+    """Safely extract the media UUID from a 'raw/<uuid>' s3Key."""
+    parts = s3_key.split("raw/", 1)
+    if len(parts) < 2 or not parts[1]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid s3Key format '{s3_key}'. Expected 'raw/<media-id>'.",
+        )
+    return parts[1]
 
 
 def handle_generate_presigned_url(
     body: GeneratePresignedUrlRequest,
+    url_type: URL_TYPE,
 ) -> GeneratePresignedUrlResponse:
     try:
-        media_id = str(uuid.uuid4())
-        s3_key = f"raw/{media_id}"
+        is_multipart = url_type == URL_TYPE.MULTIPART
+
+        if is_multipart:
+            if not body.uploadId:
+                raise HTTPException(
+                    status_code=400, detail="uploadId is required when type=multipart"
+                )
+            if body.partNumber is None:
+                raise HTTPException(
+                    status_code=400, detail="partNumber is required when type=multipart"
+                )
+            if not body.s3Key:
+                raise HTTPException(
+                    status_code=400, detail="s3Key is required when type=multipart"
+                )
+            s3_key = body.s3Key
+            media_id = _extract_media_id(s3_key)
+        else:
+            media_id = str(uuid.uuid4())
+            s3_key = f"raw/{media_id}"
 
         presigned_url, expires_in = generate_presigned_url(
             region=os.getenv("AWS_REGION", "ap-south-1"),
             bucket_name=os.getenv("RAW_BUCKET_NAME", "prasaarit-stg-raw-uploads"),
             s3_key=s3_key,
             content_type=body.contentType,
+            url_type=url_type,
+            upload_id=body.uploadId,
+            part_number=body.partNumber,
         )
 
         return GeneratePresignedUrlResponse(
@@ -74,16 +108,15 @@ def handle_multipart_complete(
     body: MultiPartUploadCompleteRequest,
 ) -> MultiPartUploadCompleteResponse:
     try:
-
-        # TODO:
-        # if not parts or not isinstance(parts, list):
-        #     return (400, {"error": "Missing or invalid parts array"})
         complete_multipart_upload(
             region=os.getenv("AWS_REGION", "ap-south-1"),
             bucket=os.getenv("RAW_BUCKET_NAME", "prasaarit-stg-raw-uploads"),
             s3_key=body.s3Key,
             upload_id=body.uploadId,
-            parts=body.parts,
+            parts=[
+                CompletedPartTypeDef(PartNumber=p.PartNumber, ETag=p.ETag)
+                for p in body.parts
+            ],
         )
 
         return MultiPartUploadCompleteResponse(success=True, uploadId=body.uploadId)

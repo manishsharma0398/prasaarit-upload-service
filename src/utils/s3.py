@@ -1,8 +1,9 @@
+from typing import Optional, TypedDict, Union
+
 import boto3
 from botocore.config import Config
-from .logger import logger
-from .constants import URL_TYPE, PRESIGNED_URL_EXPIRY
-from typing import Optional, Union, TypedDict
+
+from src.utils.constants import PRESIGNED_URL_EXPIRY, URL_TYPE
 
 
 class CompletedPartTypeDef(TypedDict):
